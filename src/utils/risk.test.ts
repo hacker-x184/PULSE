@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { evaluateProjectRisk, ProjectRecord } from './risk';
-import { TaskRecord } from './contribution';
+import { evaluateProjectRisk, ProjectRecord } from './risk.ts';
+import { TaskRecord } from './contribution.ts';
 
 test('evaluateProjectRisk detects high risk on overdue high priority tasks', () => {
   const refDate = new Date('2026-10-22T12:00:00Z');

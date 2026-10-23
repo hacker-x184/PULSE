@@ -326,13 +326,8 @@ export const api = {
     return request<any>(`/github/commits-for-task/${taskId}`);
   },
 
-  // AI Assistant
-  async queryAI(data: { prompt: string; project_id?: string }): Promise<{
-    has_api_key: boolean;
-    response: string;
-    grounding_data_points: number;
-    sources_used: string[];
-  }> {
+  // AI Assistant (Agentic Groq openai/gpt-oss-120b + Hybrid RAG + LangChain Tools)
+  async queryAI(data: { prompt: string; project_id?: string; enable_tools?: boolean }): Promise<any> {
     return request<any>('/ai/query', {
       method: 'POST',
       body: JSON.stringify(data)

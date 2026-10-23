@@ -149,7 +149,7 @@ export const TeamPage: React.FC<TeamPageProps> = ({
 
   const handleAttemptDelete = (m: TeamMember) => {
     // Check if member has active assigned tasks
-    const activeTasks = tasks.filter(t => t.assignee_id === m.id && t.status !== 'Completed' && (t.status as any) !== 'Done');
+    const activeTasks = tasks.filter(t => t.assignee_id === m.id && t.status !== 'Done' && (t.status as any) !== 'Completed');
     if (activeTasks.length > 0) {
       setBlockingError(
         `Cannot remove ${m.name}: They are currently assigned to ${activeTasks.length} active deliverable(s). Reassign these tasks or mark them Done before removing the member.`
@@ -226,11 +226,12 @@ export const TeamPage: React.FC<TeamPageProps> = ({
         {team.map(m => {
           const mTasks = tasks.filter(t => t.assignee_id === m.id);
           const totalAssigned = mTasks.length;
-          const notStarted = mTasks.filter(t => t.status === 'Not Started' || (t.status as any) === 'To Do').length;
-          const inProgress = mTasks.filter(t => t.status === 'In Progress' || (t.status as any) === 'In Review').length;
-          const completed = mTasks.filter(t => t.status === 'Completed' || (t.status as any) === 'Done').length;
-          const progressPct = totalAssigned > 0 ? Math.round((completed / totalAssigned) * 100) : 0;
-          const pending = notStarted + inProgress;
+          const toDo = mTasks.filter(t => t.status === 'To Do' || (t.status as any) === 'Not Started').length;
+          const inProgress = mTasks.filter(t => t.status === 'In Progress').length;
+          const inReview = mTasks.filter(t => t.status === 'In Review').length;
+          const done = mTasks.filter(t => t.status === 'Done' || (t.status as any) === 'Completed').length;
+          const progressPct = totalAssigned > 0 ? Math.round((done / totalAssigned) * 100) : 0;
+          const pending = toDo + inProgress + inReview;
           const overdue = mTasks.filter(t => isTaskOverdue({ status: t.status, dueDate: t.due_date || '' }, now)).length;
 
           let workloadStatus: 'Low' | 'Balanced' | 'High' | 'Overloaded' = 'Balanced';
@@ -292,20 +293,20 @@ export const TeamPage: React.FC<TeamPageProps> = ({
                 {/* Deliverables Work Status Grid */}
                 <div className="grid grid-cols-4 gap-1.5 bg-slate-50 p-2.5 rounded-lg border border-slate-100 text-center">
                   <div>
-                    <div className="text-[10px] text-slate-400 font-semibold uppercase">Assigned</div>
-                    <div className="text-sm font-bold text-slate-900 tabular-nums">{totalAssigned}</div>
-                  </div>
-                  <div>
-                    <div className="text-[10px] text-slate-500 font-semibold uppercase">Not Started</div>
-                    <div className="text-sm font-bold text-slate-700 tabular-nums">{notStarted}</div>
+                    <div className="text-[10px] text-slate-500 font-semibold uppercase">To Do</div>
+                    <div className="text-sm font-bold text-slate-700 tabular-nums">{toDo}</div>
                   </div>
                   <div>
                     <div className="text-[10px] text-blue-600 font-semibold uppercase">In Progress</div>
                     <div className="text-sm font-bold text-blue-700 tabular-nums">{inProgress}</div>
                   </div>
                   <div>
-                    <div className="text-[10px] text-emerald-600 font-semibold uppercase">Completed</div>
-                    <div className="text-sm font-bold text-emerald-700 tabular-nums">{completed}</div>
+                    <div className="text-[10px] text-amber-600 font-semibold uppercase">In Review</div>
+                    <div className="text-sm font-bold text-amber-700 tabular-nums">{inReview}</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-emerald-600 font-semibold uppercase">Done</div>
+                    <div className="text-sm font-bold text-emerald-700 tabular-nums">{done}</div>
                   </div>
                 </div>
 
@@ -316,9 +317,10 @@ export const TeamPage: React.FC<TeamPageProps> = ({
                     <span className="font-bold text-slate-800 font-mono">{progressPct}%</span>
                   </div>
                   <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden flex">
-                    <div style={{ width: `${totalAssigned > 0 ? (completed / totalAssigned) * 100 : 0}%` }} className="bg-emerald-500 h-full" />
+                    <div style={{ width: `${totalAssigned > 0 ? (done / totalAssigned) * 100 : 0}%` }} className="bg-emerald-500 h-full" />
+                    <div style={{ width: `${totalAssigned > 0 ? (inReview / totalAssigned) * 100 : 0}%` }} className="bg-amber-500 h-full" />
                     <div style={{ width: `${totalAssigned > 0 ? (inProgress / totalAssigned) * 100 : 0}%` }} className="bg-blue-500 h-full" />
-                    <div style={{ width: `${totalAssigned > 0 ? (notStarted / totalAssigned) * 100 : 0}%` }} className="bg-slate-300 h-full" />
+                    <div style={{ width: `${totalAssigned > 0 ? (toDo / totalAssigned) * 100 : 0}%` }} className="bg-slate-300 h-full" />
                   </div>
                 </div>
               </div>
@@ -520,27 +522,30 @@ export const TeamPage: React.FC<TeamPageProps> = ({
             {/* Member Progress Summary */}
             {(() => {
               const mTasks = tasks.filter(t => t.assignee_id === trackingMember.id);
-              const notStarted = mTasks.filter(t => t.status === 'Not Started' || (t.status as any) === 'To Do').length;
-              const inProgress = mTasks.filter(t => t.status === 'In Progress' || (t.status as any) === 'In Review').length;
-              const completed = mTasks.filter(t => t.status === 'Completed' || (t.status as any) === 'Done').length;
+              const toDo = mTasks.filter(t => t.status === 'To Do' || (t.status as any) === 'Not Started').length;
+              const inProgress = mTasks.filter(t => t.status === 'In Progress').length;
+              const inReview = mTasks.filter(t => t.status === 'In Review').length;
+              const done = mTasks.filter(t => t.status === 'Done' || (t.status as any) === 'Completed').length;
               const total = mTasks.length;
-              const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+              const pct = total > 0 ? Math.round((done / total) * 100) : 0;
 
               return (
                 <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-semibold text-slate-700">Overall Completion: {pct}%</span>
-                    <span className="text-slate-500">{completed} of {total} deliverables completed</span>
+                    <span className="text-slate-500">{done} of {total} deliverables completed</span>
                   </div>
                   <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden flex">
-                    <div style={{ width: `${total > 0 ? (completed / total) * 100 : 0}%` }} className="bg-emerald-500 h-full" />
+                    <div style={{ width: `${total > 0 ? (done / total) * 100 : 0}%` }} className="bg-emerald-500 h-full" />
+                    <div style={{ width: `${total > 0 ? (inReview / total) * 100 : 0}%` }} className="bg-amber-500 h-full" />
                     <div style={{ width: `${total > 0 ? (inProgress / total) * 100 : 0}%` }} className="bg-blue-500 h-full" />
-                    <div style={{ width: `${total > 0 ? (notStarted / total) * 100 : 0}%` }} className="bg-slate-400 h-full" />
+                    <div style={{ width: `${total > 0 ? (toDo / total) * 100 : 0}%` }} className="bg-slate-400 h-full" />
                   </div>
-                  <div className="flex items-center gap-4 text-[11px] pt-1">
-                    <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-slate-400 inline-block"></span> Not Started ({notStarted})</span>
+                  <div className="flex items-center gap-3 text-[11px] pt-1 flex-wrap">
+                    <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-slate-400 inline-block"></span> To Do ({toDo})</span>
                     <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span> In Progress ({inProgress})</span>
-                    <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> Completed ({completed})</span>
+                    <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span> In Review ({inReview})</span>
+                    <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> Done ({done})</span>
                   </div>
                 </div>
               );
@@ -554,7 +559,7 @@ export const TeamPage: React.FC<TeamPageProps> = ({
                 </div>
               ) : (
                 tasks.filter(t => t.assignee_id === trackingMember.id).map(t => {
-                  const currentStatus = (t.status as any) === 'Done' ? 'Completed' : (t.status as any) === 'To Do' ? 'Not Started' : t.status;
+                  const normalizedStatus = t.status;
                   return (
                     <div key={t.id} className="p-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between gap-3 shadow-2xs hover:border-slate-300 transition-colors">
                       <div className="min-w-0">
@@ -572,20 +577,23 @@ export const TeamPage: React.FC<TeamPageProps> = ({
 
                       <div className="shrink-0 flex items-center gap-2">
                         <select
-                          value={currentStatus}
+                          value={normalizedStatus}
                           disabled={updatingTaskId === t.id}
                           onChange={(e) => handleUpdateTaskStatus(t.id, e.target.value)}
                           className={`px-2.5 py-1 text-xs font-semibold rounded-lg border focus:outline-hidden focus:ring-1 focus:ring-blue-500 transition-colors ${
-                            currentStatus === 'Completed'
+                            normalizedStatus === 'Done'
                               ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                              : currentStatus === 'In Progress'
+                              : normalizedStatus === 'In Review'
+                              ? 'bg-amber-50 text-amber-800 border-amber-300'
+                              : normalizedStatus === 'In Progress'
                               ? 'bg-blue-50 text-blue-800 border-blue-300'
                               : 'bg-slate-50 text-slate-700 border-slate-300'
                           }`}
                         >
-                          <option value="Not Started">Not Started</option>
+                          <option value="To Do">To Do</option>
                           <option value="In Progress">In Progress</option>
-                          <option value="Completed">Completed</option>
+                          <option value="In Review">In Review</option>
+                          <option value="Done">Done</option>
                         </select>
                       </div>
                     </div>

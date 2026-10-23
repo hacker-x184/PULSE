@@ -9,7 +9,7 @@
  *  4. High volume of blocked / unassigned high priority tasks
  */
 
-import { TaskRecord, isTaskOverdue, isTaskCompleted } from './contribution';
+import { TaskRecord, isTaskOverdue, isTaskCompleted } from './contribution.ts';
 
 export interface ProjectRecord {
   id: string;

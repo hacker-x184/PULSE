@@ -115,7 +115,7 @@ export default function App() {
   const [quickDescription, setQuickDescription] = useState('');
   const [quickProjectId, setQuickProjectId] = useState('');
   const [quickPriority, setQuickPriority] = useState<TaskPriority>('Medium');
-  const [quickStatus, setQuickStatus] = useState<TaskStatus>('Not Started');
+  const [quickStatus, setQuickStatus] = useState<TaskStatus>('To Do');
   const [quickDueDate, setQuickDueDate] = useState('');
   const [quickAssigneeId, setQuickAssigneeId] = useState('');
 
@@ -612,9 +612,10 @@ export default function App() {
                 onChange={e => setQuickStatus(e.target.value as TaskStatus)}
                 className="w-full px-3 py-1.5 text-xs text-slate-900 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500"
               >
-                <option value="Not Started">Not Started</option>
+                <option value="To Do">To Do</option>
                 <option value="In Progress">In Progress</option>
-                <option value="Completed">Completed</option>
+                <option value="In Review">In Review</option>
+                <option value="Done">Done</option>
               </select>
             </div>
 
@@ -667,14 +668,16 @@ export default function App() {
       />
 
       {/* Project Leader Teammates Management Modal */}
-      <ProjectLeaderModal
-        isOpen={isLeaderModalOpen}
-        onClose={() => setIsLeaderModalOpen(false)}
-        project={projects.find(p => p.id === selectedProjectId) || projects[0] || null}
-        team={team}
-        currentUserId={currentUser?.id}
-        onProjectUpdated={loadAllData}
-      />
+      {isLeaderModalOpen && (
+        <ProjectLeaderModal
+          isOpen={isLeaderModalOpen}
+          onClose={() => setIsLeaderModalOpen(false)}
+          project={projects.find(p => p.id === selectedProjectId) || projects[0] || null}
+          team={team}
+          currentUserId={currentUser?.id}
+          onProjectUpdated={loadAllData}
+        />
+      )}
 
       {/* User Profile & Password Modal */}
       <UserProfileModal

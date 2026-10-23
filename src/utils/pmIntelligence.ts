@@ -1,5 +1,5 @@
-import { Task, TeamMember } from '../types';
-import { isTaskCompleted } from './contribution';
+import { Task, TeamMember } from '../types/index.ts';
+import { isTaskCompleted } from './contribution.ts';
 
 export interface CriticalPathTask {
   id: string;

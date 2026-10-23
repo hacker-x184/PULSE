@@ -20,7 +20,8 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const PORT = parseInt(process.env.PORT || '3000', 10);
+// Port 3000 is the required dev/service port for AI Studio
+const PORT = process.env.PORT && process.env.PORT !== '8080' ? parseInt(process.env.PORT, 10) : 3000;
 const isProd = process.env.NODE_ENV === 'production';
 const DB_FILE = path.join(__dirname, 'platform_database.sqlite');
 
@@ -118,7 +119,7 @@ async function initDatabase() {
       title TEXT NOT NULL,
       description TEXT,
       priority TEXT NOT NULL DEFAULT 'Medium',
-      status TEXT NOT NULL DEFAULT 'Not Started',
+      status TEXT NOT NULL DEFAULT 'To Do',
       due_date TEXT,
       assignee_id TEXT,
       reporter_id TEXT,
@@ -375,10 +376,9 @@ async function initDatabase() {
   runSafeMigration("UPDATE users SET role = 'Team Leader' WHERE role IN ('Admin', 'Manager', 'Project Director', 'Lead System Architect')");
   runSafeMigration("UPDATE users SET role = 'Member' WHERE role NOT IN ('Team Leader')");
   runSafeMigration("UPDATE team_members SET role = 'Team Leader' WHERE id = 'm-u-zaid'");
-  // Normalize legacy task statuses
-  runSafeMigration("UPDATE tasks SET status = 'Not Started' WHERE status = 'To Do'");
-  runSafeMigration("UPDATE tasks SET status = 'Completed' WHERE status = 'Done'");
-  runSafeMigration("UPDATE tasks SET status = 'In Progress' WHERE status = 'In Review'");
+  // Normalize legacy task statuses to 4 canonical states: To Do, In Progress, In Review, Done
+  runSafeMigration("UPDATE tasks SET status = 'To Do' WHERE status = 'Not Started'");
+  runSafeMigration("UPDATE tasks SET status = 'Done' WHERE status = 'Completed'");
 
   // Ensure tables exist in migrated databases
   db.run(`
@@ -637,17 +637,17 @@ function seedDatabase() {
     (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?),
     (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
-      't-101', p1Id, 'EQX-101', 'Story', 'Design idempotency key partition scheme', 'Prevent duplicate transaction insertion during network retry spikes.', 'High', 'Completed', dThreeDaysAgo, m1Id, 'u-zaid', 16.0, 5, 'Sprint 1 (Active)', now.toISOString(), now.toISOString(),
+      't-101', p1Id, 'EQX-101', 'Story', 'Design idempotency key partition scheme', 'Prevent duplicate transaction insertion during network retry spikes.', 'High', 'Done', dThreeDaysAgo, m1Id, 'u-zaid', 16.0, 5, 'Sprint 1 (Active)', now.toISOString(), now.toISOString(),
       't-102', p1Id, 'EQX-102', 'Task', 'Implement distributed lock with SQLite WAL fallback', 'Guarantee single-writer serialization on accounting ledger records.', 'High', 'In Progress', dYesterday, m2Id, 'u-zaid', 24.0, 8, 'Sprint 1 (Active)', now.toISOString(), now.toISOString(),
-      't-103', p1Id, 'EQX-103', 'Story', 'Write load test harness for 5,000 TPS baseline', 'Verify latency percentiles p95 and p99 stay under 40ms.', 'Medium', 'Not Started', dIn3Days, m4Id, 'u-zaid', 12.0, 3, 'Sprint 1 (Active)', now.toISOString(), now.toISOString(),
-      't-104', p1Id, 'EQX-104', 'Task', 'Automate CI migration schema validation', 'Run linters and dry-run migrations against SQLite test fixtures.', 'Low', 'Completed', dThreeDaysAgo, m4Id, 'u-zaid', 8.0, 2, 'Sprint 1 (Active)', now.toISOString(), now.toISOString(),
+      't-103', p1Id, 'EQX-103', 'Story', 'Write load test harness for 5,000 TPS baseline', 'Verify latency percentiles p95 and p99 stay under 40ms.', 'Medium', 'To Do', dIn3Days, m4Id, 'u-zaid', 12.0, 3, 'Sprint 1 (Active)', now.toISOString(), now.toISOString(),
+      't-104', p1Id, 'EQX-104', 'Task', 'Automate CI migration schema validation', 'Run linters and dry-run migrations against SQLite test fixtures.', 'Low', 'Done', dThreeDaysAgo, m4Id, 'u-zaid', 8.0, 2, 'Sprint 1 (Active)', now.toISOString(), now.toISOString(),
 
       't-201', p2Id, 'PORT-201', 'Story', 'Implement responsive data table with tabular figures', 'Ensure numeric alignment and clean sorting on desktop and tablet.', 'High', 'In Progress', dTomorrow, m3Id, 'u-elena', 18.0, 5, 'Sprint 2 (Active)', now.toISOString(), now.toISOString(),
-      't-202', p2Id, 'PORT-202', 'Task', 'Build streaming CSV export endpoint', 'RFC 4180 compliant export with formula injection sanitization.', 'High', 'Not Started', dIn3Days, m2Id, 'u-elena', 10.0, 3, 'Sprint 2 (Active)', now.toISOString(), now.toISOString(),
-      't-203', p2Id, 'PORT-203', 'Bug', 'Wire SVG progress bars and status indicators', 'Zero-pill discipline and accessible high-contrast color palette.', 'Medium', 'Not Started', dYesterday, m3Id, 'u-elena', 8.0, 2, 'Sprint 2 (Active)', now.toISOString(), now.toISOString(),
+      't-202', p2Id, 'PORT-202', 'Task', 'Build streaming CSV export endpoint', 'RFC 4180 compliant export with formula injection sanitization.', 'High', 'In Review', dIn3Days, m2Id, 'u-elena', 10.0, 3, 'Sprint 2 (Active)', now.toISOString(), now.toISOString(),
+      't-203', p2Id, 'PORT-203', 'Bug', 'Wire SVG progress bars and status indicators', 'Zero-pill discipline and accessible high-contrast color palette.', 'Medium', 'To Do', dYesterday, m3Id, 'u-elena', 8.0, 2, 'Sprint 2 (Active)', now.toISOString(), now.toISOString(),
 
-      't-301', p3Id, 'IAM-301', 'Story', 'Draft OAuth2 scope matrix and RBAC specs', 'Document permissions required for admin vs developer roles.', 'Medium', 'In Progress', dIn10Days, m1Id, 'u-zaid', 14.0, 5, 'Sprint 1 (Active)', now.toISOString(), now.toISOString(),
-      't-302', p3Id, 'IAM-302', 'Task', 'Configure token revocation list and Redis cache', 'Immediate logout propagation across cluster nodes.', 'High', 'Not Started', dIn30Days, null, 'u-zaid', 20.0, 8, 'Sprint 1 (Active)', now.toISOString(), now.toISOString()
+      't-301', p3Id, 'IAM-301', 'Story', 'Draft OAuth2 scope matrix and RBAC specs', 'Document permissions required for admin vs developer roles.', 'Medium', 'In Review', dIn10Days, m1Id, 'u-zaid', 14.0, 5, 'Sprint 1 (Active)', now.toISOString(), now.toISOString(),
+      't-302', p3Id, 'IAM-302', 'Task', 'Configure token revocation list and Redis cache', 'Immediate logout propagation across cluster nodes.', 'High', 'To Do', dIn30Days, null, 'u-zaid', 20.0, 8, 'Sprint 1 (Active)', now.toISOString(), now.toISOString()
     ]
   );
 
@@ -1464,7 +1464,7 @@ async function startServer() {
         title !== undefined ? title.trim() : task.title,
         description !== undefined ? description : task.description,
         priority !== undefined ? priority : task.priority,
-        status !== undefined ? status : task.status,
+        status !== undefined ? (status === 'Not Started' ? 'To Do' : (status === 'Completed' ? 'Done' : status)) : task.status,
         due_date !== undefined ? due_date : task.due_date,
         assignee_id !== undefined ? (assignee_id || null) : task.assignee_id,
         reporter_id !== undefined ? (reporter_id || null) : task.reporter_id,
@@ -1489,11 +1489,10 @@ async function startServer() {
     if (!status) return res.status(400).json({ detail: 'Status is required' });
 
     // Normalize legacy status strings
-    if (status === 'To Do') status = 'Not Started';
-    if (status === 'Done') status = 'Completed';
-    if (status === 'In Review') status = 'In Progress';
+    if (status === 'Not Started') status = 'To Do';
+    if (status === 'Completed') status = 'Done';
 
-    const validStatuses = ['Not Started', 'In Progress', 'Completed'];
+    const validStatuses = ['To Do', 'In Progress', 'In Review', 'Done'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ detail: `Invalid status. Must be one of: ${validStatuses.join(', ')}` });
     }
@@ -1511,11 +1510,11 @@ async function startServer() {
       `Task status updated to "${status}" (was "${task.status}")`
     );
 
-    if (status === 'Completed') {
+    if (status === 'Done') {
       createNotification(
         task.reporter_id || null,
-        `✅ Deliverable Completed: ${task.issue_key || task.title}`,
-        `${authUser?.name || 'Assignee'} marked task "${task.title}" as Completed.`,
+        `✅ Deliverable Done: ${task.issue_key || task.title}`,
+        `${authUser?.name || 'Assignee'} marked task "${task.title}" as Done.`,
         'task',
         '/tasks'
       );
@@ -1704,10 +1703,11 @@ async function startServer() {
     const memberStatusOverview = members.map(m => {
       const assignedTasks = allTasks.filter(t => t.assignee_id === m.id);
       const totalAssigned = assignedTasks.length;
-      const notStarted = assignedTasks.filter(t => t.status === 'Not Started' || t.status === 'To Do').length;
-      const inProgress = assignedTasks.filter(t => t.status === 'In Progress' || t.status === 'In Review').length;
-      const completed = assignedTasks.filter(t => t.status === 'Completed' || t.status === 'Done').length;
-      const progress = totalAssigned > 0 ? Math.round((completed / totalAssigned) * 100) : 0;
+      const toDo = assignedTasks.filter(t => t.status === 'To Do' || t.status === 'Not Started').length;
+      const inProgress = assignedTasks.filter(t => t.status === 'In Progress').length;
+      const inReview = assignedTasks.filter(t => t.status === 'In Review').length;
+      const done = assignedTasks.filter(t => t.status === 'Done' || t.status === 'Completed').length;
+      const progress = totalAssigned > 0 ? Math.round((done / totalAssigned) * 100) : 0;
 
       return {
         member_id: m.id,
@@ -1717,15 +1717,18 @@ async function startServer() {
         avatar_url: m.avatar_url,
         github_username: m.github_username,
         total_assigned: totalAssigned,
-        not_started_count: notStarted,
+        to_do_count: toDo,
         in_progress_count: inProgress,
-        completed_count: completed,
+        in_review_count: inReview,
+        done_count: done,
+        not_started_count: toDo,
+        completed_count: done,
         completion_percentage: progress,
         tasks: assignedTasks.map(t => ({
           id: t.id,
           issue_key: t.issue_key,
           title: t.title,
-          status: t.status === 'Done' ? 'Completed' : (t.status === 'To Do' ? 'Not Started' : t.status),
+          status: t.status === 'Completed' ? 'Done' : (t.status === 'Not Started' ? 'To Do' : t.status),
           priority: t.priority,
           due_date: t.due_date,
           story_points: t.story_points,
@@ -3364,7 +3367,7 @@ async function startServer() {
           const isHigh = issue.labels?.some((l: any) => l.name?.toLowerCase().includes('high') || l.name?.toLowerCase().includes('urgent'));
           execute(
             `INSERT INTO tasks (id, project_id, title, description, status, priority, issue_type, issue_key, sprint, story_points, reporter_id, created_at, updated_at)
-             VALUES (?, ?, ?, ?, 'Not Started', ?, ?, ?, 'Sprint 1 (Active)', 3, ?, ?, ?)`,
+             VALUES (?, ?, ?, ?, 'To Do', ?, ?, ?, 'Sprint 1 (Active)', 3, ?, ?, ?)`,
             [
               taskId,
               projectId,

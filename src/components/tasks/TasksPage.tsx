@@ -92,7 +92,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({
   const [description, setDescription] = useState('');
   const [projectId, setProjectId] = useState(selectedProjectId || (projects[0]?.id ?? ''));
   const [priority, setPriority] = useState<TaskPriority>('Medium');
-  const [status, setStatus] = useState<TaskStatus>('Not Started');
+  const [status, setStatus] = useState<TaskStatus>('To Do');
   const [issueType, setIssueType] = useState<IssueType>('Story');
   const [storyPoints, setStoryPoints] = useState<number>(3);
   const [sprint, setSprint] = useState<string>('Sprint 1 (Active)');
@@ -108,7 +108,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({
     setDescription('');
     setProjectId(selectedProjectId || (projects[0]?.id ?? ''));
     setPriority('Medium');
-    setStatus('Not Started');
+    setStatus('To Do');
     setIssueType('Story');
     setStoryPoints(3);
     setSprint(currentProject?.current_sprint || 'Sprint 1 (Active)');
@@ -262,9 +262,10 @@ export const TasksPage: React.FC<TasksPageProps> = ({
   });
 
   const lanes: { id: TaskStatus; label: string; count: number; color: string }[] = [
-    { id: 'Not Started', label: 'Not Started', count: sortedTasks.filter(t => t.status === 'Not Started' || (t.status as any) === 'To Do').length, color: 'border-t-slate-400' },
-    { id: 'In Progress', label: 'In Progress', count: sortedTasks.filter(t => t.status === 'In Progress' || (t.status as any) === 'In Review').length, color: 'border-t-blue-500' },
-    { id: 'Completed', label: 'Completed', count: sortedTasks.filter(t => t.status === 'Completed' || (t.status as any) === 'Done').length, color: 'border-t-emerald-500' }
+    { id: 'To Do', label: 'To Do', count: sortedTasks.filter(t => t.status === 'To Do' || (t.status as any) === 'Not Started').length, color: 'border-t-slate-400' },
+    { id: 'In Progress', label: 'In Progress', count: sortedTasks.filter(t => t.status === 'In Progress').length, color: 'border-t-blue-500' },
+    { id: 'In Review', label: 'In Review', count: sortedTasks.filter(t => t.status === 'In Review').length, color: 'border-t-amber-500' },
+    { id: 'Done', label: 'Done', count: sortedTasks.filter(t => t.status === 'Done' || (t.status as any) === 'Completed').length, color: 'border-t-emerald-500' }
   ];
 
   // Group tasks for Backlog / Sprints view
@@ -464,9 +465,10 @@ export const TasksPage: React.FC<TasksPageProps> = ({
               className="px-2.5 py-1.5 text-xs text-slate-700 bg-slate-50 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-blue-500 shrink-0"
             >
               <option value="all">All Statuses</option>
-              <option value="Not Started">Not Started</option>
+              <option value="To Do">To Do</option>
               <option value="In Progress">In Progress</option>
-              <option value="Completed">Completed</option>
+              <option value="In Review">In Review</option>
+              <option value="Done">Done</option>
             </select>
 
             {/* Priority filter */}
@@ -913,7 +915,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({
                           key={t.id}
                           onClick={() => setInspectingTask(t)}
                           className={`p-1 rounded text-[10px] cursor-pointer truncate font-medium border ${
-                            t.status === 'Completed' || (t.status as any) === 'Done'
+                            t.status === 'Done'
                               ? 'bg-emerald-50 text-emerald-800 border-emerald-200 line-through'
                               : overdue
                               ? 'bg-rose-50 text-rose-800 border-rose-200 font-bold'
@@ -951,17 +953,21 @@ export const TasksPage: React.FC<TasksPageProps> = ({
             </div>
 
             <div className="flex items-center gap-3 text-xs">
-              <span className="flex items-center gap-1.5 font-semibold text-emerald-700">
-                <span className="w-3 h-3 rounded bg-emerald-500"></span>
-                <span>Completed</span>
+              <span className="flex items-center gap-1.5 font-semibold text-slate-600">
+                <span className="w-3 h-3 rounded bg-slate-400"></span>
+                <span>To Do</span>
               </span>
               <span className="flex items-center gap-1.5 font-semibold text-blue-700">
                 <span className="w-3 h-3 rounded bg-blue-500"></span>
                 <span>In Progress</span>
               </span>
-              <span className="flex items-center gap-1.5 font-semibold text-slate-600">
-                <span className="w-3 h-3 rounded bg-slate-300"></span>
-                <span>Not Started</span>
+              <span className="flex items-center gap-1.5 font-semibold text-amber-700">
+                <span className="w-3 h-3 rounded bg-amber-500"></span>
+                <span>In Review</span>
+              </span>
+              <span className="flex items-center gap-1.5 font-semibold text-emerald-700">
+                <span className="w-3 h-3 rounded bg-emerald-500"></span>
+                <span>Done</span>
               </span>
             </div>
           </div>
@@ -1007,11 +1013,13 @@ export const TasksPage: React.FC<TasksPageProps> = ({
                     <div className="w-36 bg-slate-100 h-6 rounded-md overflow-hidden relative border border-slate-200">
                       <div
                         className={`h-full flex items-center px-2 text-[10px] font-bold text-white transition-all ${
-                          t.status === 'Completed' || (t.status as any) === 'Done'
+                          t.status === 'Done' || (t.status as any) === 'Completed'
                             ? 'w-full bg-emerald-600'
-                            : t.status === 'In Progress' || (t.status as any) === 'In Review'
-                            ? 'w-2/3 bg-blue-600'
-                            : 'w-1/3 bg-slate-400'
+                            : t.status === 'In Review'
+                            ? 'w-3/4 bg-amber-600'
+                            : t.status === 'In Progress'
+                            ? 'w-1/2 bg-blue-600'
+                            : 'w-1/4 bg-slate-400'
                         }`}
                       >
                         <span className="truncate">{t.status}</span>
@@ -1030,33 +1038,37 @@ export const TasksPage: React.FC<TasksPageProps> = ({
       )}
 
       {/* Jira Issue Detail Drawer / Modal */}
-      <JiraIssueDetailModal
-        task={inspectingTask}
-        isOpen={Boolean(inspectingTask)}
-        onClose={() => setInspectingTask(null)}
-        project={currentProject}
-        team={team}
-        onUpdateTask={async (id, data) => {
-          await onUpdateTask(id, data);
-          if (inspectingTask && inspectingTask.id === id) {
-            setInspectingTask({ ...inspectingTask, ...data });
-          }
-        }}
-        onDeleteTask={onDeleteTask}
-        onOpenGitHubModal={() => setIsGitHubModalOpen(true)}
-      />
+      {inspectingTask && (
+        <JiraIssueDetailModal
+          task={inspectingTask}
+          isOpen={true}
+          onClose={() => setInspectingTask(null)}
+          project={currentProject}
+          team={team}
+          onUpdateTask={async (id, data) => {
+            await onUpdateTask(id, data);
+            if (inspectingTask && inspectingTask.id === id) {
+              setInspectingTask({ ...inspectingTask, ...data });
+            }
+          }}
+          onDeleteTask={onDeleteTask}
+          onOpenGitHubModal={() => setIsGitHubModalOpen(true)}
+        />
+      )}
 
       {/* Project Leader Modal */}
-      <ProjectLeaderModal
-        isOpen={isLeaderModalOpen}
-        onClose={() => setIsLeaderModalOpen(false)}
-        project={currentProject}
-        team={team}
-        currentUserId={currentUser?.id}
-        onProjectUpdated={async () => {
-          if (onRefreshData) await onRefreshData();
-        }}
-      />
+      {isLeaderModalOpen && currentProject && (
+        <ProjectLeaderModal
+          isOpen={true}
+          onClose={() => setIsLeaderModalOpen(false)}
+          project={currentProject}
+          team={team}
+          currentUserId={currentUser?.id}
+          onProjectUpdated={async () => {
+            if (onRefreshData) await onRefreshData();
+          }}
+        />
+      )}
 
       {/* Personal GitHub Modal */}
       <MemberGitHubModal
@@ -1203,9 +1215,10 @@ export const TasksPage: React.FC<TasksPageProps> = ({
                 onChange={e => setStatus(e.target.value as TaskStatus)}
                 className="w-full px-3 py-1.5 text-xs text-slate-900 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500"
               >
-                <option value="Not Started">Not Started</option>
+                <option value="To Do">To Do</option>
                 <option value="In Progress">In Progress</option>
-                <option value="Completed">Completed</option>
+                <option value="In Review">In Review</option>
+                <option value="Done">Done</option>
               </select>
             </div>
 

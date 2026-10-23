@@ -11,7 +11,7 @@ export interface TaskRecord {
   projectId: string;
   title: string;
   priority: 'Low' | 'Medium' | 'High';
-  status: 'Not Started' | 'In Progress' | 'Completed' | 'To Do' | 'In Review' | 'Done';
+  status: 'To Do' | 'In Progress' | 'In Review' | 'Done' | 'Not Started' | 'Completed';
   dueDate: string;
   assigneeId?: string | null;
   estimatedHours?: number;

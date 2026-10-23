@@ -1,5 +1,5 @@
 export type ProjectStatus = 'Planning' | 'Active' | 'In Review' | 'Completed' | 'On Hold';
-export type TaskStatus = 'Not Started' | 'In Progress' | 'Completed';
+export type TaskStatus = 'To Do' | 'In Progress' | 'In Review' | 'Done';
 export type TaskPriority = 'Low' | 'Medium' | 'High';
 export type RiskLevel = 'Low' | 'Medium' | 'High';
 export type IssueType = 'Story' | 'Bug' | 'Task' | 'Epic';

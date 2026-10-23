@@ -24,6 +24,7 @@ import { Avatar } from '../common/Avatar';
 
 export type ActivePage =
   | 'dashboard'
+  | 'agent-studio'
   | 'projects'
   | 'tasks'
   | 'team'
@@ -66,6 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const navItems = [
     { id: 'dashboard' as ActivePage, label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'agent-studio' as ActivePage, label: 'Agentic AI & RAG Studio', icon: Sparkles },
     { id: 'projects' as ActivePage, label: 'Projects', icon: FolderKanban },
     { id: 'tasks' as ActivePage, label: 'Task Management', icon: CheckSquare },
     { id: 'team' as ActivePage, label: 'Team Directory', icon: Users },

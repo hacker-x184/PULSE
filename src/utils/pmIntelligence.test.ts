@@ -5,7 +5,7 @@ import {
   detectMissingEvidence,
   generateRedistributionSuggestions,
   calculateCriticalPathAndVariance
-} from './pmIntelligence';
+} from './pmIntelligence.ts';
 
 test('calculateEstimationAccuracy computes variance and accuracy score correctly', () => {
   const sampleTasks = [

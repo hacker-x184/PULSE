@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { sanitizeCsvCell, generateCsv } from './csv';
+import { sanitizeCsvCell, generateCsv } from './csv.ts';
 
 test('sanitizeCsvCell escapes quotes and wraps in quotes when comma or newline is present', () => {
   assert.equal(sanitizeCsvCell('Hello World'), 'Hello World');

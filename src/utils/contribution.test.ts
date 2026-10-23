@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { calculateMemberContribution, isTaskOverdue, TaskRecord } from './contribution';
+import { calculateMemberContribution, isTaskOverdue, TaskRecord } from './contribution.ts';
 
 test('isTaskOverdue returns true for past due dates on pending tasks', () => {
   const refDate = new Date('2026-10-22T12:00:00Z');

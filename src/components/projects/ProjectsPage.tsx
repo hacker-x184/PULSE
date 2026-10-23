@@ -396,7 +396,7 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({
           {filteredProjects.map(p => {
             const pTasks = tasks.filter(t => t.project_id === p.id);
             const totalTasks = pTasks.length;
-            const completedTasks = pTasks.filter(t => t.status === 'Completed' || (t.status as any) === 'Done').length;
+            const completedTasks = pTasks.filter(t => t.status === 'Done').length;
             const progressPct = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
             const memberCount = (p.member_ids || []).length;
             const isArchived = Boolean(p.is_archived);

@@ -48,18 +48,16 @@ export const JiraIssueDetailModal: React.FC<JiraIssueDetailModalProps> = ({
   onDeleteTask,
   onOpenGitHubModal
 }) => {
-  if (!isOpen || !task) return null;
-
-  const [title, setTitle] = useState(task.title);
-  const [description, setDescription] = useState(task.description || '');
-  const [status, setStatus] = useState<TaskStatus>(task.status);
-  const [priority, setPriority] = useState<TaskPriority>(task.priority);
-  const [issueType, setIssueType] = useState<IssueType>(task.issue_type || 'Story');
-  const [storyPoints, setStoryPoints] = useState<number>(task.story_points || 3);
-  const [sprint, setSprint] = useState<string>(task.sprint || project?.current_sprint || 'Sprint 1 (Active)');
-  const [assigneeId, setAssigneeId] = useState<string>(task.assignee_id || '');
-  const [dueDate, setDueDate] = useState<string>(task.due_date || '');
-  const [estimatedHours, setEstimatedHours] = useState<number>(task.estimated_hours || 0);
+  const [title, setTitle] = useState(task?.title || '');
+  const [description, setDescription] = useState(task?.description || '');
+  const [status, setStatus] = useState<TaskStatus>(task?.status || 'To Do');
+  const [priority, setPriority] = useState<TaskPriority>(task?.priority || 'Medium');
+  const [issueType, setIssueType] = useState<IssueType>(task?.issue_type || 'Story');
+  const [storyPoints, setStoryPoints] = useState<number>(task?.story_points || 3);
+  const [sprint, setSprint] = useState<string>(task?.sprint || project?.current_sprint || 'Sprint 1 (Active)');
+  const [assigneeId, setAssigneeId] = useState<string>(task?.assignee_id || '');
+  const [dueDate, setDueDate] = useState<string>(task?.due_date || '');
+  const [estimatedHours, setEstimatedHours] = useState<number>(task?.estimated_hours || 0);
 
   const [linkedCommits, setLinkedCommits] = useState<LinkedCommit[]>([]);
   const [linkedPRs, setLinkedPRs] = useState<any[]>([]);
@@ -78,6 +76,7 @@ export const JiraIssueDetailModal: React.FC<JiraIssueDetailModalProps> = ({
 
   // Sync state when task changes
   useEffect(() => {
+    if (!task) return;
     setTitle(task.title);
     setDescription(task.description || '');
     setStatus(task.status);
@@ -114,6 +113,8 @@ export const JiraIssueDetailModal: React.FC<JiraIssueDetailModalProps> = ({
         setIsLoadingCommits(false);
       });
   }, [task]);
+
+  if (!isOpen || !task) return null;
 
   const handleAddAttachment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -560,9 +561,10 @@ export const JiraIssueDetailModal: React.FC<JiraIssueDetailModalProps> = ({
                 onChange={(e) => setStatus(e.target.value as TaskStatus)}
                 className="w-full px-3 py-2 text-xs font-bold text-slate-900 bg-white border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500 shadow-2xs"
               >
-                <option value="Not Started">Not Started</option>
+                <option value="To Do">To Do</option>
                 <option value="In Progress">In Progress</option>
-                <option value="Completed">Completed</option>
+                <option value="In Review">In Review</option>
+                <option value="Done">Done</option>
               </select>
             </div>
 
